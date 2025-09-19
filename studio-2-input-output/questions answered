@@ -1,0 +1,21 @@
+1.) It began letting me type on my keyboard and after I press enter it repeated back what I just wrote. Then after ctrl d it stopped and went back to letting me
+input commands
+
+2.) It printed the txt contants of mars.txt
+
+3.) Using nano new.txt to access the files, it seemed that new.txt just copied the text from mars.txt into itself. Pretty cool!
+
+4.) It replaced the original text with what I inputd into the terminal
+
+5.) Insteaed of rewriting it this time, it just picked up where the old text left off but on the next line.
+
+6.) My header was   #include <unistd.h>, so ill be using that
+
+8.) its a number > 0 or 0 if it is at end of file and -1 for an error
+
+9.) Yes it matches
+
+10.) I dont know for sure but I think that it would affect correctness as if might reach the byte limit easier depending on the value
+
+11.) the smaller probably the more correct but also prolly slower as it would have to do more iterations of the loop and bigger would be faster but less correct or 
+maybe smaller uses less memory space and is slower and bigger uses more but is faster
