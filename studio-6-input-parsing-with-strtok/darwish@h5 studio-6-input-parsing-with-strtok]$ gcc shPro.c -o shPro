@@ -1,0 +1,175 @@
+STRTOK(3)                  Linux Programmer's Manual                 STRTOK(3)
+
+[1mNAME[0m
+       strtok, strtok_r - extract tokens from strings
+
+[1mSYNOPSIS[0m
+       [1m#include <string.h>[0m
+
+       [1mchar *strtok(char *[4m[22mstr[24m[1m, const char *[4m[22mdelim[24m[1m);[0m
+
+       [1mchar *strtok_r(char *[4m[22mstr[24m[1m, const char *[4m[22mdelim[24m[1m, char **[4m[22msaveptr[24m[1m);[0m
+
+   Feature Test Macro Requirements for glibc (see [1mfeature_test_macros[22m(7)):
+
+       [1mstrtok_r[22m(): _POSIX_C_SOURCE
+           || /* Glibc versions <= 2.19: */ _BSD_SOURCE || _SVID_SOURCE
+
+[1mDESCRIPTION[0m
+       The  [1mstrtok[22m()  function breaks a string into a sequence of zero or more
+       nonempty tokens.  On the first call  to  [1mstrtok[22m(),  the  string  to  be
+       parsed should be specified in [4mstr[24m.  In each subsequent call that should
+       parse the same string, [4mstr[24m must be NULL.
+
+       The [4mdelim[24m argument specifies a set of bytes that delimit the tokens  in
+       the  parsed  string.  The caller may specify different strings in [4mdelim[0m
+       in successive calls that parse the same string.
+
+       Each call to [1mstrtok[22m() returns a pointer  to  a  null-terminated  string
+       containing the next token.  This string does not include the delimiting
+       byte.  If no more tokens are found, [1mstrtok[22m() returns NULL.
+
+       A sequence of calls to [1mstrtok[22m() that operate on the same  string  main‐
+       tains a pointer that determines the point from which to start searching
+       for the next token.  The first call to [1mstrtok[22m() sets  this  pointer  to
+       point  to the first byte of the string.  The start of the next token is
+       determined by scanning forward for the next nondelimiter byte  in  [4mstr[24m.
+       If  such  a  byte is found, it is taken as the start of the next token.
+       If no such byte is found, then there are no more tokens,  and  [1mstrtok[22m()
+       returns NULL.  (A string that is empty or that contains only delimiters
+       will thus cause [1mstrtok[22m() to return NULL on the first call.)
+
+       The end of each token is found by scanning  forward  until  either  the
+       next  delimiter byte is found or until the terminating null byte ('\0')
+       is encountered.  If a delimiter byte is found, it is overwritten with a
+       null  byte to terminate the current token, and [1mstrtok[22m() saves a pointer
+       to the following byte; that pointer will be used as the starting  point
+       when  searching  for  the next token.  In this case, [1mstrtok[22m() returns a
+       pointer to the start of the found token.
+
+       From the above description, it follows that a sequence of two  or  more
+       contiguous  delimiter  bytes in the parsed string is considered to be a
+       single delimiter, and that delimiter bytes at the start or end  of  the
+       string  are  ignored.  Put another way: the tokens returned by [1mstrtok[22m()
+       are always nonempty strings.   Thus,  for  example,  given  the  string
+       "[4maaa;;bbb,[24m",  successive  calls  to [1mstrtok[22m() that specify the delimiter
+       string "[4m;,[24m" would return the strings "[4maaa[24m" and "[4mbbb[24m", and then  a  null
+       pointer.
+
+       The  [1mstrtok_r[22m()  function is a reentrant version [1mstrtok[22m().  The [4msaveptr[0m
+       argument is a pointer to a [4mchar[24m [4m*[24m variable that is used  internally  by
+       [1mstrtok_r[22m()  in  order to maintain context between successive calls that
+       parse the same string.
+
+       On the first call to [1mstrtok_r[22m(), [4mstr[24m should point to the string  to  be
+       parsed,  and the value of [4msaveptr[24m is ignored.  In subsequent calls, [4mstr[0m
+       should be NULL, and [4msaveptr[24m should  be  unchanged  since  the  previous
+       call.
+
+       Different  strings  may be parsed concurrently using sequences of calls
+       to [1mstrtok_r[22m() that specify different [4msaveptr[24m arguments.
+
+[1mRETURN VALUE[0m
+       The [1mstrtok[22m() and [1mstrtok_r[22m() functions return  a  pointer  to  the  next
+       token, or NULL if there are no more tokens.
+
+[1mATTRIBUTES[0m
+       For   an   explanation   of   the  terms  used  in  this  section,  see
+       [1mattributes[22m(7).
+
+       ┌───────────┬───────────────┬───────────────────────┐
+       │[1mInterface  [22m│ [1mAttribute     [22m│ [1mValue                 [22m│
+       ├───────────┼───────────────┼───────────────────────┤
+       │[1mstrtok[22m()   │ Thread safety │ MT-Unsafe race:strtok │
+       ├───────────┼───────────────┼───────────────────────┤
+       │[1mstrtok_r[22m() │ Thread safety │ MT-Safe               │
+       └───────────┴───────────────┴───────────────────────┘
+[1mCONFORMING TO[0m
+       [1mstrtok[22m()
+              POSIX.1-2001, POSIX.1-2008, C89, C99, SVr4, 4.3BSD.
+
+       [1mstrtok_r[22m()
+              POSIX.1-2001, POSIX.1-2008.
+
+[1mBUGS[0m
+       Be cautious when using these functions.  If you do use them, note that:
+
+       * These functions modify their first argument.
+
+       * These functions cannot be used on constant strings.
+
+       * The identity of the delimiting byte is lost.
+
+       * The [1mstrtok[22m() function uses a static buffer while parsing, so it's not
+         thread safe.  Use [1mstrtok_r[22m() if this matters to you.
+
+[1mEXAMPLE[0m
+       The  program  below uses nested loops that employ [1mstrtok_r[22m() to break a
+       string into a two-level hierarchy of tokens.   The  first  command-line
+       argument specifies the string to be parsed.  The second argument speci‐
+       fies the delimiter byte(s) to be used  to  separate  that  string  into
+       "major"  tokens.  The third argument specifies the delimiter byte(s) to
+       be used to separate the "major" tokens into subtokens.
+
+       An example of the output produced by this program is the following:
+
+           $ [1m./a.out 'a/bbb///cc;xxx:yyy:' ':;' '/'[0m
+           1: a/bbb///cc
+                    --> a
+                    --> bbb
+                    --> cc
+           2: xxx
+                    --> xxx
+           3: yyy
+                    --> yyy
+
+   [1mProgram source[0m
+
+       #include <stdio.h>
+       #include <stdlib.h>
+       #include <string.h>
+
+       int
+       main(int argc, char *argv[])
+       {
+           char *str1, *str2, *token, *subtoken;
+           char *saveptr1, *saveptr2;
+           int j;
+
+           if (argc != 4) {
+               fprintf(stderr, "Usage: %s string delim subdelim\n",
+                       argv[0]);
+               exit(EXIT_FAILURE);
+           }
+
+           for (j = 1, str1 = argv[1]; ; j++, str1 = NULL) {
+               token = strtok_r(str1, argv[2], &saveptr1);
+               if (token == NULL)
+                   break;
+               printf("%d: %s\n", j, token);
+
+               for (str2 = token; ; str2 = NULL) {
+                   subtoken = strtok_r(str2, argv[3], &saveptr2);
+                   if (subtoken == NULL)
+                       break;
+                   printf(" --> %s\n", subtoken);
+               }
+           }
+
+           exit(EXIT_SUCCESS);
+       }
+
+       Another  example  program  using  [1mstrtok[22m()  can  be  found  in   [1mgetad‐[0m
+       [1mdrinfo_a[22m(3).
+
+[1mSEE ALSO[0m
+       [1mindex[22m(3),   [1mmemchr[22m(3),  [1mrindex[22m(3),  [1mstrchr[22m(3),  [1mstring[22m(3),  [1mstrpbrk[22m(3),
+       [1mstrsep[22m(3), [1mstrspn[22m(3), [1mstrstr[22m(3), [1mwcstok[22m(3)
+
+[1mCOLOPHON[0m
+       This page is part of release 4.15 of the Linux  [4mman-pages[24m  project.   A
+       description  of  the project, information about reporting bugs, and the
+       latest    version    of    this    page,    can     be     found     at
+       https://www.kernel.org/doc/man-pages/.
+
+GNU                               2017-09-15                         STRTOK(3)
